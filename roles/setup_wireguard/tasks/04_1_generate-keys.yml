@@ -1,0 +1,104 @@
+- name: Register if private key file already exists
+  ansible.builtin.stat:
+    path: "{{ item['wireguard_remote_directory'] }}/privatekey"
+  register: wireguard__register_private_key_file
+
+- name: Register if public key file already
+  ansible.builtin.stat:
+    path: "{{ item['wireguard_remote_directory'] }}/publickey"
+  register: wireguard__register_public_key_file
+
+- name: WireGuard private key handling for new keys
+  block:
+    - name: Generate WireGuard private key
+      ansible.builtin.command: "wg genkey"
+      register: wireguard__register_private_key
+      changed_when: false
+
+    - name: Set private key fact
+      ansible.builtin.set_fact:
+        wireguard__fact_private_key: "{{ wireguard__register_private_key.stdout }}"
+      no_log: '{{ ansible_verbosity < 3 }}'
+
+    - name: Set server private key fact
+      ansible.builtin.set_fact:
+        wireguard__fact_server_private_key: "{{ wireguard__fact_private_key }}"
+      no_log: '{{ ansible_verbosity < 3 }}'
+      when: item['wireguard_server'] == "true"
+
+    - name: Save WireGuard private key in file
+      copy:
+        content: "{{ wireguard__register_private_key.stdout }}"
+        dest: "{{ item['wireguard_remote_directory'] }}/privatekey"
+        owner: "root"
+        group: "root"
+        mode: "0600"
+  when:
+    - not wireguard__register_private_key_file.stat.exists
+
+- name: WireGuard private key handling for existing keys
+  block:
+    - name: Read WireGuard privatekey file
+      ansible.builtin.slurp:
+        src: "{{ item['wireguard_remote_directory'] }}/privatekey"
+      register: wireguard__register_private_key
+      
+    - name: Set private key fact
+      ansible.builtin.set_fact:
+        wireguard__fact_private_key: "{{ wireguard__register_private_key['content'] | b64decode }}"
+      no_log: '{{ ansible_verbosity < 3 }}'
+
+    - name: Set server private key fact
+      ansible.builtin.set_fact:
+        wireguard__fact_server_private_key: "{{ wireguard__register_private_key['content'] | b64decode }}"
+      no_log: '{{ ansible_verbosity < 3 }}'
+      when: item['wireguard_server'] == "true"
+
+  when:
+    - wireguard__register_private_key_file.stat.exists
+
+- name: WireGuard generate public key
+  block:
+    - name: Generate WireGuard public key
+      ansible.builtin.command: "wg pubkey"
+      args:
+        stdin: "{{ wireguard__fact_private_key }}"
+      register: wireguard__register_public_key
+      changed_when: false
+      check_mode: false
+
+    - name: Set public key fact
+      ansible.builtin.set_fact:
+        wireguard__fact_public_key: "{{ wireguard__register_public_key.stdout }}"
+
+    - name: Set server public key fact
+      ansible.builtin.set_fact:
+        wireguard__fact_server_public_key: "{{ wireguard__fact_public_key }}"
+      when: item['wireguard_server'] == "true"
+      no_log: '{{ ansible_verbosity < 3 }}'
+
+    - name: Save WireGuard public_key in file
+      copy:
+        content: "{{ wireguard__fact_public_key }}"
+        dest: "{{ item['wireguard_remote_directory'] }}/publickey"
+        owner: "root"
+        group: "root"
+        mode: "0600"
+      no_log: '{{ ansible_verbosity < 3 }}'
+      when:
+        - not wireguard__register_public_key_file.stat.exists
+
+- name: Generate WireGuard configuration file
+  ansible.builtin.template:
+    src: wg_client.conf.j2
+    dest: "{{ item['wireguard_remote_directory'] }}/{{ wireguard_interface }}.conf"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  register: wireguard__config_generate
+  when: not item['wireguard_server'] == "true"
+
+- name: Dict for serverconfig
+  set_fact:
+    pubkey_clients: "{{ pubkey_clients|default([]) + [{'public_key': wireguard__fact_public_key, 'allowedips': (item['wireguard_address'] | ansible.netcommon.ipaddr('address')) + '/32' } ] }}"
+  when: not item['wireguard_server'] == "true"

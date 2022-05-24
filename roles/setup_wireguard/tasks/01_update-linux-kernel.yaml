@@ -1,0 +1,48 @@
+---
+
+- name: Update kernel when linux Debian Buster
+  block:
+  - name: Add backports repository into sources list
+    apt_repository:
+      repo: "deb http://deb.debian.org/debian buster-backports main contrib non-free"
+      state: present
+      update_cache: yes
+  - name: Update version linux kernel
+    apt: name={{ item }} state=present update_cache=yes default_release=buster-backports
+    loop: [ 'linux-image-5.10*-amd64' ]
+    register: linuxkernel
+  - name: Get kernel BEFORE
+    debug:
+      var: ansible_facts['kernel']
+    register: kernel_before
+  when: ansible_distribution == 'Debian' and ansible_lsb.codename == 'buster'
+
+- name: Reboot VM for kernel/libs update
+  reboot:
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: linuxkernel.changed
+  
+- name: Wait for system to become reachable again
+  wait_for_connection:
+    delay: 10
+    timeout: 300
+  when: linuxkernel.changed
+
+- name: Re-collect facts
+  setup:
+    gather_subset:
+      - '!all'
+
+- name: Get kernel AFTER
+  debug:
+    var: ansible_facts['kernel']
+  register: kernel_after
+
+- name: Display diff between kernel version 
+  debug:
+    msg:
+      - Kernel BEFORE {{ kernel_before }}
+      - Kernel AFTER  {{ kernel_after }}
+  when: linuxkernel.changed

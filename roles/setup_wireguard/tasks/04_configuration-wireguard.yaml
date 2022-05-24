@@ -1,0 +1,30 @@
+- name: Create WireGuard configuration directory
+  ansible.builtin.file:
+    dest: "{{ item['wireguard_remote_directory'] }}"
+    state: directory
+    mode: 0700
+  loop: "{{ wireguard|list }}"
+
+- name: deploy files with network address in them
+  include_tasks: 04_1_generate_keys.yml
+  loop: "{{ wireguard }}"
+
+- name: Generate WireGuard configuration file for server
+  ansible.builtin.template:
+    src: wg_server.conf.j2
+    dest: "{{ item['wireguard_remote_directory'] }}/{{ wireguard_interface }}.conf"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  register: wireguard__config_generate
+  when: item['wireguard_server'] == "true"
+  loop: "{{ wireguard }}"
+
+- name: restart wireguard
+  ansible.builtin.service:
+    name: "wg-quick@{{ wireguard_interface }}"
+    state: "{{ item }}"
+  loop:
+    - stopped
+    - started
+  when: wireguard__config_generate.changed

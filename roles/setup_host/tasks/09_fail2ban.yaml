@@ -1,0 +1,18 @@
+---
+- name: Install fail2ban on Debian
+  block:
+  - name: Install fail2ban packages
+    apt:
+      deb: https://github.com/fail2ban/fail2ban/releases/download/0.11.2/fail2ban_0.11.2-1.upstream1_all.deb
+    ignore_errors: yes
+  - name: Touch a /var/log/auth.log, to avoid problem when fail2ban can't start without this file
+    file:
+      path: /var/log/auth.log
+      state: touch
+      mode: u=rw,g=r,o=r
+  - name: Start service fail2ban
+    systemd:
+      name: fail2ban
+      state: started
+  when: ansible_distribution == 'Debian'
+

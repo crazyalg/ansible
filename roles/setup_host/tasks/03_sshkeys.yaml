@@ -1,0 +1,15 @@
+# - name: Set authorized key taken from file
+#   authorized_key:
+#     user: root
+#     state: present
+#     key: "{{ item }}"
+#   with_file:
+#     - static/ssh.keys/alg.pub
+
+# - name: Remove authorized key taken from file
+#   authorized_key:
+#     user: root
+#     state: absent
+#     key: "{{ item }}"
+#   with_file:
+#     - static/ssh.keys/algold.pub

@@ -1,0 +1,11 @@
+wireguard:
+- { "wireguard_remote_directory":"/etc/wireguard", "wireguard_address":"10.8.0.101/24", 
+"wireguard_dns": "1.1.1.1", "wireguard_server": "true", "wireguard_allowedips": "0.0.0.0/0" }
+- { "wireguard_remote_directory":"/project/work-netbook-alg", "wireguard_address":"10.8.0.102/24", 
+"wireguard_dns": "1.1.1.1", "wireguard_server": "false", "wireguard_allowedips": "0.0.0.0/0" }
+- { "wireguard_remote_directory":"/project/home-phone-alg", "wireguard_address":"10.8.0.103/24", 
+"wireguard_dns": "1.1.1.1", "wireguard_server": "false", "wireguard_allowedips": "0.0.0.0/0" }
+- { "wireguard_remote_directory":"/project/home-phone-juliya", "wireguard_address":"10.8.0.104/24", 
+"wireguard_dns": "1.1.1.1", "wireguard_server": "false", "wireguard_allowedips": "0.0.0.0/0" }
+- { "wireguard_remote_directory":"/project/home-netbook-juliya", "wireguard_address":"10.8.0.105/24", 
+"wireguard_dns": "1.1.1.1", "wireguard_server": "false", "wireguard_allowedips": "0.0.0.0/0" }

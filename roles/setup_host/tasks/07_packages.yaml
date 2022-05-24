@@ -1,0 +1,30 @@
+---
+- name: Update all on system
+  block:
+  - name: Update all packages to their latest version
+    apt:
+      name: "*"
+      state: latest
+  - name: Upgrade existing packages
+    apt:
+      upgrade: safe
+  tags: new_install
+
+- name: Install packages on debian
+  block:
+  - name: Install required system packages
+    apt: name={{ item }} state=present update_cache=yes
+    loop: [ 'sudo', 'curl', 'mc', 'htop',
+            'apt-transport-https', 'ca-certificates', 
+            'software-properties-common', 'python3-pip', 
+            'virtualenv', 'python3-setuptools', 'apt-transport-https', 
+            'ca-certificates', 'libffi-dev', 'gcc', 'python3-dev', 'make',
+            'ncdu', 'vim', 'net-tools', 'mtr', 'atop', 'bzip2', 'git',
+            'jq', 'iftop', 'iotop', 'lsof', 'ntpdate', 'openssl', 'parted',
+            'wget', 'rsync', 'tcpdump', 'screen', 'tzdata', 'wget', 
+            'bash-completion', 'dnsutils', 'logrotate', 'systemd-timesyncd' ]
+  - name: Remove dependencies that are no longer required
+    apt:
+      autoremove: yes
+  when: ansible_distribution == 'Debian'
+

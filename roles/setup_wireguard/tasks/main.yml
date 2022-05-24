@@ -1,0 +1,5 @@
+- include: 01_update-linux-kernel.yaml
+- include: 02_install-wireguard.yaml
+- include: 03_configuration-system.yaml
+- include: 04_configuration-wireguard.yaml
+- include: 05_firewalld.yaml

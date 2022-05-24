@@ -1,0 +1,56 @@
+---
+# - name: Install required firewalld packages
+#   apt: name=firewalld state=latest update_cache=yes
+#   register: firewalld
+- name: Install firewalld on Debian
+  block:
+  - name: Add backports repository into sources list
+    apt_repository:
+      repo: "deb http://deb.debian.org/debian {{ansible_distribution_release}}-backports main contrib non-free"
+      state: present
+      update_cache: yes
+  - name: install iptables, firewalld
+    apt:
+      name: "{{ item }}"
+      state: latest
+      default_release: '{{ ansible_distribution_release }}-backports'
+      update_cache: true
+    loop:
+      - iptables
+      - firewalld
+    become: true
+  - name: Enable firewalld service # noqa 503
+    systemd:
+      state: started
+      name: firewalld
+  - name: permit traffic in default zone for sshd service
+    ansible.posix.firewalld:
+      service: ssh
+      permanent: yes
+      state: enabled
+  # - ansible.posix.firewalld:
+  #     port: 2222/tcp
+  #     permanent: yes
+  #     state: enabled
+  # To avoid conflict firewalld & docker with overwriting iptables rules
+  - name: Replace FirewallBackend for firewalld from nftables to iptables
+    lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      regexp: '^FirewallBackend=nftables$'
+      line: 'FirewallBackend=iptables'
+    register: firewallbackend
+  when: ansible_distribution == 'Debian'
+
+
+- name: Reboot VM for reset iptables rules & apply firewalld/netfilter rules # noqa 503
+  reboot:
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: firewallbackend.changed
+
+- name: Wait for system to become reachable again # noqa 503
+  wait_for_connection:
+    delay: 10
+    timeout: 300
+  when: firewallbackend.changed

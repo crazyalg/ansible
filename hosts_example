@@ -1,0 +1,1 @@
+vpn01    ansible_user=root ansible_host=101.101.101.101 ansible_port=22

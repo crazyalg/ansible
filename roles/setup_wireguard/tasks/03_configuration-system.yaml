@@ -1,0 +1,25 @@
+---
+
+  - name: Enable net.ipv4.ip_forward
+    sysctl:
+      name: net.ipv4.ip_forward
+      value: 1
+      reload: yes
+      state: present
+
+  - name: Enable WireGuard kernel module
+    modprobe:
+      name: wireguard
+      state: present
+    register: wireguard_module_enabled
+    until:  wireguard_module_enabled is succeeded
+    retries: 10
+    delay: 10
+    failed_when: wireguard_module_enabled is failure
+
+  - name: Add the wireguard on boot
+    copy:
+      dest: "/etc/modules-load.d/wireguard.conf"
+      content: |
+         wireguard
+      mode: '0644'

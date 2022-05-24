@@ -1,0 +1,13 @@
+[Interface]
+Address = {{ item['wireguard_address'] }}
+PrivateKey = {{ wireguard__fact_server_private_key }}
+ListenPort = {{ wireguard_port }}
+{% if item['wireguard_dns'] is defined %}
+DNS = {{ item['wireguard_dns'] }}
+{% endif %}
+
+{% for item in pubkey_clients %}
+[Peer]
+PublicKey = {{ item.public_key }}
+AllowedIps = {{ item.allowedips }}
+{% endfor %}

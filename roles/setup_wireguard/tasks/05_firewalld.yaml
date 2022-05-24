@@ -1,0 +1,11 @@
+# Firewall
+- block:
+  - name: firewall add interface {{ wireguard_interface }} to trusted
+    shell: "firewall-cmd --permanent --zone=internal --add-interface={{ wireguard_interface }}"
+  - name: firewall open udp port
+    shell: "firewall-cmd --permanent --zone=public --add-port={{ wireguard_port }}/udp"
+  - name: firewall make forwarding
+    shell: "firewall-cmd --zone=public --add-rich-rule='rule family=ipv4 source address={{ wireguard_subnet }}/24 masquerade' --permanent"
+  - name: firewall reload
+    shell: "firewall-cmd --reload"
+  when: wireguard__config_generate.changed

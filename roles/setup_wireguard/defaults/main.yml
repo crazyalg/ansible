@@ -1,0 +1,8 @@
+---
+
+# # The default port WireGuard will listen if not specified otherwise.
+wireguard_port: "51820"
+
+# # # The default interface name that WireGuard should use if not specified otherwise.
+wireguard_interface: "wg0"
+wireguard_subnet: "10.8.0.0"

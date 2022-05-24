@@ -1,0 +1,12 @@
+[Interface]
+Address = {{ item['wireguard_address'] }}
+PrivateKey = {{ wireguard__fact_private_key }}
+{% if item['wireguard_dns'] is defined %}
+DNS = {{ item['wireguard_dns'] }}
+{% endif %}
+
+[Peer]
+PublicKey = {{ wireguard__fact_server_public_key }}
+AllowedIps = {{ item['wireguard_allowedips'] }}
+Endpoint = {{ hostvars[inventory_hostname]['ansible_host'] }}:51820
+PersistentKeepalive = 20

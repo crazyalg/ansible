@@ -1,0 +1,11 @@
+---
+  - include: 01_hostname.yaml
+  - include: 02_timezone.yaml
+  - include: 03_sshkeys.yaml
+  - include: 04_sshd.yaml
+  - include: 05_system.yaml
+  - include: 06_time-sync.yaml
+  - include: 07_packages.yaml
+  - include: 08_firewall.yaml
+  - include: 09_fail2ban.yaml
+  - include: 10_update-motd.yaml

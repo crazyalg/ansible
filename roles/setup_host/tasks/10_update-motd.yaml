@@ -1,0 +1,12 @@
+---
+- name: Copy update-mode files
+  copy:
+   src: files/update-motd.d/
+   dest: /etc/update-motd.d
+   mode: '0755'
+
+- name: Modify motd file
+  copy:
+    content: ---
+    dest: /etc/motd
+    mode: '0644'

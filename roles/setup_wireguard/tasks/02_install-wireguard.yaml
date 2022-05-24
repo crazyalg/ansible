@@ -1,0 +1,12 @@
+---
+  
+  - name: Install wireguard repo (for Debian 10)
+    apt_repository:
+      filename: buster-backports
+      repo: 'deb http://deb.debian.org/debian buster-backports main'
+      update_cache: yes
+    when: ansible_distribution == 'Debian' and ansible_lsb.codename == 'buster'
+
+  - name: Install required system packages
+    apt: name={{ item }} state=present update_cache=yes
+    loop: [ 'wireguard', 'wireguard-dkms', 'wireguard-tools', 'resolvconf' ]
