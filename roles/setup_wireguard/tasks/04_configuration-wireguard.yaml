@@ -6,7 +6,7 @@
   loop: "{{ wireguard|list }}"
 
 - name: deploy files with network address in them
-  include_tasks: 04_1_generate_keys.yml
+  include_tasks: 04_1_generate-keys.yml
   loop: "{{ wireguard }}"
 
 - name: Generate WireGuard configuration file for server
