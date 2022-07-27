@@ -1,3 +1,4 @@
 hosts
 *.pub
 old/
+host_vars/vpn01
